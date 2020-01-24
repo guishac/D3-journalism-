@@ -11,23 +11,24 @@ var chartMargin = {
   left: 80
 };
 
-// Define dimensions of the chart area
+// setting the dimensions 
 var chartWidth = svgWidth - chartMargin.left - chartMargin.right;
 var chartHeight = svgHeight - chartMargin.top - chartMargin.bottom;
 
-// Select body, append SVG area to it, and set the dimensions
+
+var chart = d3.select("#scatter").append("div").classed("chart", true);
+
+// appending 
 var svg = d3.select('body')
   .append("svg")
   .attr("height", svgHeight)
   .attr("width", svgWidth);
 
-// Append a group to the SVG area and shift ('translate') it to the right and to the bottom
-var chartGroup = svg.append("g")
-  .attr("transform", `translate(${chartMargin.left}, ${chartMargin.top})`);
+var chartGroup = svg.append("g").attr("transform", `translate(${chartMargin.left}, ${chartMargin.top})`);
 
-// loading data in and reading it 
-../D3-Data-Journalism/data/data.csv"
-d3.csv("../D3_-Journalism/data/healthdata.csv").then(function (healthData) {
+// loading data in 
+
+d3.csv("./assets/data/healthData.csv").then(function (healthData) {
   //console.log(healthData);
   healthData.forEach(function (data) {
     data.health_poverty = +data.health_poverty;
@@ -51,7 +52,7 @@ d3.csv("../D3_-Journalism/data/healthdata.csv").then(function (healthData) {
   chartGroup.append("g")
     .call(leftAxis);
 
-  // Step 5: Create Circle
+  //  making the circle 
 
   var circlesGroup = chartGroup.selectAll("circle")
     .data(healthData)
@@ -80,15 +81,15 @@ d3.csv("../D3_-Journalism/data/healthdata.csv").then(function (healthData) {
       return (`${d.Health}<br>Health factors: ${d.health_poverty}<br>Hits: ${d.lackof}`);
     });
 
-  // create tool tip in chart 
+   
   chartGroup.call(toolTip);
 
-  // event listener to hide tooltip
+  // making a listener for the tool tip 
   circlesGroup.on("click", function (data) {
     toolTip.show(data, this);
   })
 
-    // onmouseout event 
+    
     .on("mouseout", function (data, index) {
       toolTip.hide(data);
     });
