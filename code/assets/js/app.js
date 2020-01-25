@@ -1,115 +1,109 @@
-// @TODO: YOUR CODE HERE!
-// Define SVG area dimensions
-var svgWidth = 960;
-var svgHeight = 660;
+var svgWidth = 900;
+var svgHeight = 600;
 
-// Define the chart's margins as an object
-var chartMargin = {
-  top: 40,
+var chartmargin = {
+  top: 20,
   right: 40,
   bottom: 80,
-  left: 80
+  left: 100
 };
 
-// setting the dimensions 
-var chartWidth = svgWidth - chartMargin.left - chartMargin.right;
-var chartHeight = svgHeight - chartMargin.top - chartMargin.bottom;
+var chartwidth = svgWidth - chartmargin.left - chartmargin.right;
+var chartheight = svgHeight - chartmargin.top - chartmargin.bottom;
 
-
-var chart = d3.select("#scatter").append("div").classed("chart", true);
-
-// appending 
-var svg = d3.select('body')
+// basic svg setup
+var svg = d3
+  .select("#scatter")
   .append("svg")
-  .attr("height", svgHeight)
-  .attr("width", svgWidth);
+  .attr("width", svgWidth)
+  .attr("height", svgHeight);
 
-var chartGroup = svg.append("g").attr("transform", `translate(${chartMargin.left}, ${chartMargin.top})`);
+// chart group
+var chartGroup = svg.append("g")
+  .attr("transform", `translate(${chartmargin.left}, ${chartmargin.top})`);
 
-// loading data in 
 
 d3.csv("./assets/data/healthData.csv").then(function (healthData) {
-  //console.log(healthData);
-  healthData.forEach(function (data) {
-    data.health_poverty = +data.health_poverty;
-    data.lackof = +data.lacof;
+
+  // convert data to numbers
+  healthData.forEach(function (xdata) {
+    xdata.poverty = +xdata.poverty;
+    xdata.healthcare = +xdata.healthcare;
+    //console.log(xdata.state,xdata.abbr,xdata.poverty,xdata.healthcare);
   });
+
+  // set x scale function
   var xLinearScale = d3.scaleLinear()
-    .domain([20, d3.max(healthData, d => d.health_poverty)])
-    .range([0, width]);
+    .domain([d3.min(healthData, d => d.poverty) * 0.9,
+    d3.max(healthData, d => d.poverty) * 1.1])
+    .range([0, chartwidth]);
 
+  // set y scale function
   var yLinearScale = d3.scaleLinear()
-    .domain([0, d3.max(healthData, d => d.lackof)])
-    .range([height, 0]);
+    .domain([0, d3.max(healthData, d => d.healthcare) * 1.1])
+    .range([chartheight, 0]);
 
+  // axes
   var bottomAxis = d3.axisBottom(xLinearScale);
   var leftAxis = d3.axisLeft(yLinearScale);
 
+  // append x axis
   chartGroup.append("g")
-    .attr("transform", `translate(0, ${height})`)
+    .attr("transform", `translate(0, ${chartheight})`)
+    .style("font-size", "18px")
     .call(bottomAxis);
 
+  // append y axis
   chartGroup.append("g")
+    .style("font-size", "18px")
     .call(leftAxis);
 
-  //  making the circle 
-
-  var circlesGroup = chartGroup.selectAll("circle")
+  // do the circles
+  chartGroup.selectAll("circle")
     .data(healthData)
     .enter()
     .append("circle")
-    .attr("cx", d => xLinearScale(d.health_poverty))
-    .attr("cy", d => yLinearScale(d.lackof))
-    .attr("r", "15")
+    .attr("cx", d => xLinearScale(d.poverty))
+    .attr("cy", d => yLinearScale(d.healthcare))
+    .attr("r", 12)
     .attr("fill", "blue")
-    .attr("opacity", ".5");
+    .attr("opacity", ".3");
 
-  var stateText = chartGroup.append('g').selectAll('text')
-    .data(healthdata)
+  // text in circles
+  chartGroup.selectAll("text.text-circles")
+    .data(healthData)
     .enter()
-    .append('text')
-    .classed('stateText', true)
-    .attr('x', d => xScale(d[chosenXAxis]))
-    .attr('y', d => yScale(d[chosenYAxis]))
-    .attr('transform', 'translate(0,4.5)')
-    .text(d => d.abbr);
+    .append("text")
+    .classed("text-circles", true)
+    .text(d => d.abbr)
+    .attr("x", d => xLinearScale(d.poverty))
+    .attr("y", d => yLinearScale(d.healthcare))
+    .attr("dy", 5)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px");
 
-  var toolTip = d3.tip()
-    .attr("class", "tooltip")
-    .offset([80, -60])
-    .html(function (d) {
-      return (`${d.Health}<br>Health factors: ${d.health_poverty}<br>Hits: ${d.lackof}`);
-    });
-
-   
-  chartGroup.call(toolTip);
-
-  // making a listener for the tool tip 
-  circlesGroup.on("click", function (data) {
-    toolTip.show(data, this);
-  })
-
-    
-    .on("mouseout", function (data, index) {
-      toolTip.hide(data);
-    });
-
-
+  // y axis
   chartGroup.append("text")
     .attr("transform", "rotate(-90)")
-    .attr("y", 0 - margin.left + 40)
+    .attr("y", 30 - margin.left)
     .attr("x", 0 - (height / 2))
     .attr("dy", "1em")
-    .attr("class", "axisText")
-    .text("Lacks Healthcare (%)");
+    .classed("aText", true)
+    .text("Lacking Healthcare (%)");
 
+  // var toolTip = d3.tip()
+  //     .attr("class", "tooltip")
+  //     .offset([80, -60])
+  //     .html(function (d) {
+  //      return (`${d.Health}<br>Health factors: ${d.health_poverty}<br>Hits: ${d.lackof}`);
+
+  // x axis
   chartGroup.append("text")
-    .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
-    .attr("class", "axisText")
-    .text("In Poverty (%)");
-}).catch(function (error) {
-  console.log(error);
+    .attr("y", height + margin.bottom / 2 - 10)
+    .attr("x", width / 2)
+    .attr("dy", "1em")
+    .classed("aText", true)
+    .text("Poverty Rate (%)");
 
 
-
-});
+    });
