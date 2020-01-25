@@ -11,7 +11,7 @@ var chartmargin = {
 var chartwidth = svgWidth - chartmargin.left - chartmargin.right;
 var chartheight = svgHeight - chartmargin.top - chartmargin.bottom;
 
-// basic svg setup
+// adding svg
 var svg = d3
   .select("#scatter")
   .append("svg")
@@ -25,40 +25,40 @@ var chartGroup = svg.append("g")
 
 d3.csv("./assets/data/healthData.csv").then(function (healthData) {
 
-  // convert data to numbers
+  // converting the data into a frame for numbers 
   healthData.forEach(function (xdata) {
     xdata.poverty = +xdata.poverty;
     xdata.healthcare = +xdata.healthcare;
     //console.log(xdata.state,xdata.abbr,xdata.poverty,xdata.healthcare);
   });
 
-  // set x scale function
+  // settibg the x scale function
   var xLinearScale = d3.scaleLinear()
     .domain([d3.min(healthData, d => d.poverty) * 0.9,
     d3.max(healthData, d => d.poverty) * 1.1])
     .range([0, chartwidth]);
 
-  // set y scale function
+  // setting the y scale function
   var yLinearScale = d3.scaleLinear()
     .domain([0, d3.max(healthData, d => d.healthcare) * 1.1])
     .range([chartheight, 0]);
 
-  // axes
+  // creating the axis 
   var bottomAxis = d3.axisBottom(xLinearScale);
   var leftAxis = d3.axisLeft(yLinearScale);
 
-  // append x axis
+  // appending the x axis
   chartGroup.append("g")
     .attr("transform", `translate(0, ${chartheight})`)
     .style("font-size", "18px")
     .call(bottomAxis);
 
-  // append y axis
+  // appending the y axis
   chartGroup.append("g")
     .style("font-size", "18px")
     .call(leftAxis);
 
-  // do the circles
+  // creating the circles and appending them
   chartGroup.selectAll("circle")
     .data(healthData)
     .enter()
@@ -69,7 +69,7 @@ d3.csv("./assets/data/healthData.csv").then(function (healthData) {
     .attr("fill", "blue")
     .attr("opacity", ".3");
 
-  // text in circles
+  // putting text in the circles
   chartGroup.selectAll("text.text-circles")
     .data(healthData)
     .enter()
@@ -82,7 +82,7 @@ d3.csv("./assets/data/healthData.csv").then(function (healthData) {
     .attr("text-anchor", "middle")
     .attr("font-size", "12px");
 
-  // y axis
+  // formatting the y axis 
   chartGroup.append("text")
     .attr("transform", "rotate(-90)")
     .attr("y", 30 - margin.left)
@@ -97,7 +97,7 @@ d3.csv("./assets/data/healthData.csv").then(function (healthData) {
   //     .html(function (d) {
   //      return (`${d.Health}<br>Health factors: ${d.health_poverty}<br>Hits: ${d.lackof}`);
 
-  // x axis
+  // formatting the x axis
   chartGroup.append("text")
     .attr("y", height + margin.bottom / 2 - 10)
     .attr("x", width / 2)
